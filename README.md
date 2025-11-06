@@ -14,7 +14,7 @@ Jogo 2d topdown sobre a escola de Canelas
 
 ## 🎯 Objetivos Principais
 - [ ] Desenvolver um jogo 2d topdown
-- [ ] Escolher as tecnologis adequadas para o desenvolvimento
+- [ ] Escolher as tecnologiAs adequadas para o desenvolvimento
 - [ ] Implementar desafios
 - [ ] Testar o jogo e melhorar-lo
 
