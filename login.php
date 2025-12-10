@@ -182,7 +182,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form method="POST" action="">
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" required placeholder="seu@email.com" autocomplete="email">
+                <input type="email" id="email" name="email" required placeholder="seu@canelas.pt" autocomplete="email">
             </div>
             
             <div class="form-group">
@@ -195,8 +195,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <div class="info-box">
             <strong>👤 Contas de Teste:</strong>
-            <div><strong>Admin:</strong> admin@escola.com / admin123</div>
-            <div><strong>Usuário:</strong> joao@email.com / 123456</div>
+            <div><strong>Admin:</strong> admin@canelas.pt / admin123</div>
+            <div><strong>Aluno:</strong> joao.silva@canelas.pt / 123456</div>
         </div>
     </div>
 </body>
