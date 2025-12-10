@@ -63,5 +63,9 @@ class Auth {
     public function getUserEmail() {
         return $_SESSION['user_email'] ?? '';
     }
+    
+    public function getUserId() {
+        return $_SESSION['user_id'] ?? null;
+    }
 }
 ?>
