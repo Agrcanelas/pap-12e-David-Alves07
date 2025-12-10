@@ -802,4 +802,23 @@ $userTipo = $_SESSION['user_tipo'];
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     emprestimo_id: emprestimoId,
-                    material
+                    material_id: materialId
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert('✅ Material devolvido com sucesso!');
+                    location.reload();
+                } else {
+                    alert('❌ Erro ao devolver material: ' + (data.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(err => {
+                alert('❌ Erro de conexão');
+                console.error(err);
+            });
+        }
+    </script>
+</body>
+</html>
