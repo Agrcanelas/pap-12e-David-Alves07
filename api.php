@@ -27,8 +27,7 @@ $isAdmin = $_SESSION['is_admin'] ?? 0;
 
 switch($action) {
     case 'listar_materiais':
-        $stmt = $db->query("SELECT * FROM materiais ORDER BY tipo, CAST(SUBSTRING(nome, LOCATE(' ', nome) + 1) AS UNSIGNED), nome");
-        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+$stmt = $db->query("SELECT * FROM materiais WHERE status = 'disponivel' ORDER BY tipo, CAST(SUBSTRING(nome, LOCATE(' ', nome) + 1) AS UNSIGNED), nome");        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
         break;
         
     case 'listar_materiais_disponiveis':
