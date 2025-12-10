@@ -217,7 +217,183 @@ $stmt = $db->query("SELECT * FROM materiais WHERE status = 'disponivel' ORDER BY
         
         echo json_encode($stats);
         break;
+  
+        case 'adicionar_material':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        if($method === 'POST') {
+            $data = json_decode(file_get_contents("php://input"));
+            
+            $stmt = $db->prepare("INSERT INTO materiais (nome, tipo, numero_serie, status) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$data->nome, $data->tipo, $data->numero_serie, $data->status]);
+            
+            echo json_encode(['success' => true, 'id' => $db->lastInsertId()]);
+        }
+        break;
         
+    case 'editar_material':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        if($method === 'POST') {
+            $data = json_decode(file_get_contents("php://input"));
+            
+            $stmt = $db->prepare("UPDATE materiais SET nome = ?, tipo = ?, numero_serie = ?, status = ? WHERE id = ?");
+            $stmt->execute([$data->nome, $data->tipo, $data->numero_serie, $data->status, $data->id]);
+            
+            echo json_encode(['success' => true]);
+        }
+        break;
+        
+    case 'eliminar_material':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        if($method === 'POST') {
+            $data = json_decode(file_get_contents("php://input"));
+            
+            // Verificar se o material está emprestado
+            $stmt = $db->prepare("SELECT COUNT(*) as total FROM emprestimos WHERE material_id = ? AND status = 'ativo'");
+            $stmt->execute([$data->id]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if($result['total'] > 0) {
+                echo json_encode(['success' => false, 'error' => 'Material está emprestado, não pode ser eliminado']);
+                break;
+            }
+            
+            $stmt = $db->prepare("DELETE FROM materiais WHERE id = ?");
+            $stmt->execute([$data->id]);
+            
+            echo json_encode(['success' => true]);
+        }
+        break;
+        
+    case 'adicionar_usuario':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        if($method === 'POST') {
+            $data = json_decode(file_get_contents("php://input"));
+            
+            $stmt = $db->prepare("INSERT INTO usuarios (nome, email, senha, telefone, tipo, ano, turma, numero_processo, nif, tel_encarregado) VALUES (?, ?, MD5(?), ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $data->nome, 
+                $data->email, 
+                $data->senha, 
+                $data->telefone, 
+                $data->tipo, 
+                $data->ano ?? null, 
+                $data->turma ?? null, 
+                $data->numero_processo ?? null, 
+                $data->nif ?? null, 
+                $data->tel_encarregado ?? null
+            ]);
+            
+            echo json_encode(['success' => true, 'id' => $db->lastInsertId()]);
+        }
+        break;
+        
+    case 'editar_usuario':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        if($method === 'POST') {
+            $data = json_decode(file_get_contents("php://input"));
+            
+            // Se não enviou senha, não atualizar
+            if(!empty($data->senha)) {
+                $stmt = $db->prepare("UPDATE usuarios SET nome = ?, email = ?, senha = MD5(?), telefone = ?, tipo = ?, ano = ?, turma = ?, numero_processo = ?, nif = ?, tel_encarregado = ? WHERE id = ?");
+                $stmt->execute([
+                    $data->nome, 
+                    $data->email, 
+                    $data->senha, 
+                    $data->telefone, 
+                    $data->tipo, 
+                    $data->ano ?? null, 
+                    $data->turma ?? null, 
+                    $data->numero_processo ?? null, 
+                    $data->nif ?? null, 
+                    $data->tel_encarregado ?? null,
+                    $data->id
+                ]);
+            } else {
+                $stmt = $db->prepare("UPDATE usuarios SET nome = ?, email = ?, telefone = ?, tipo = ?, ano = ?, turma = ?, numero_processo = ?, nif = ?, tel_encarregado = ? WHERE id = ?");
+                $stmt->execute([
+                    $data->nome, 
+                    $data->email, 
+                    $data->telefone, 
+                    $data->tipo, 
+                    $data->ano ?? null, 
+                    $data->turma ?? null, 
+                    $data->numero_processo ?? null, 
+                    $data->nif ?? null, 
+                    $data->tel_encarregado ?? null,
+                    $data->id
+                ]);
+            }
+            
+            echo json_encode(['success' => true]);
+        }
+        break;
+        
+    case 'eliminar_usuario':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        if($method === 'POST') {
+            $data = json_decode(file_get_contents("php://input"));
+            
+            // Verificar se o usuário tem empréstimos ativos
+            $stmt = $db->prepare("SELECT COUNT(*) as total FROM emprestimos WHERE usuario_id = ? AND status = 'ativo'");
+            $stmt->execute([$data->id]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if($result['total'] > 0) {
+                echo json_encode(['success' => false, 'error' => 'Utilizador tem empréstimos ativos, não pode ser eliminado']);
+                break;
+            }
+            
+            $stmt = $db->prepare("DELETE FROM usuarios WHERE id = ?");
+            $stmt->execute([$data->id]);
+            
+            echo json_encode(['success' => true]);
+        }
+        break;
+        
+    case 'obter_material':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        $id = $_GET['id'] ?? null;
+        if($id) {
+            $stmt = $db->prepare("SELECT * FROM materiais WHERE id = ?");
+            $stmt->execute([$id]);
+            echo json_encode($stmt->fetch(PDO::FETCH_ASSOC));
+        }
+        break;
+        
+    case 'obter_usuario':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        $id = $_GET['id'] ?? null;
+        if($id) {
+            $stmt = $db->prepare("SELECT * FROM usuarios WHERE id = ?");
+            $stmt->execute([$id]);
+            echo json_encode($stmt->fetch(PDO::FETCH_ASSOC));
+        }
+        break;
+
     default:
         echo json_encode(['error' => 'Ação inválida']);
 }
