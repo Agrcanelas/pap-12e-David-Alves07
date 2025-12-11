@@ -823,3 +823,288 @@ $userTipo = $_SESSION['user_tipo'];
     
     <script>
         const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Carregar estatísticas (admin)
+        function carregarEstatisticas() {
+            if(!isAdmin) return;
+            
+            fetch('api.php?action=estatisticas')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('stat-total').textContent = data.total_materiais;
+                    document.getElementById('stat-disponiveis').textContent = data.materiais_disponiveis;
+                    document.getElementById('stat-emprestados').textContent = data.materiais_emprestados;
+                    document.getElementById('stat-pendentes').textContent = data.pedidos_pendentes;
+                    document.getElementById('stat-usuarios').textContent = data.total_usuarios;
+                });
+        }
+        
+        // Carregar materiais
+        function carregarMateriais() {
+            fetch('api.php?action=listar_materiais')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.querySelector('#tabelaMateriais tbody');
+                    if(data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="${isAdmin ? 5 : 4}" style="text-align:center;">Nenhum material cadastrado</td></tr>`;
+                    } else {
+                        tbody.innerHTML = data.map(m => {
+                            let row = `<tr>
+                                <td>${m.nome}</td>
+                                <td>${m.tipo}</td>
+                                <td>${m.numero_serie || '-'}</td>
+                                <td><span class="badge badge-${m.status}">${m.status}</span></td>`;
+                            
+                            if(isAdmin) {
+                                row += `<td>
+                                    <div class="btn-group">
+                                        <button class="btn-warning" onclick="editarMaterial(${m.id})">✏️ Editar</button>
+                                        <button class="btn-danger" onclick="eliminarMaterial(${m.id}, '${m.nome}')">🗑️ Eliminar</button>
+                                    </div>
+                                </td>`;
+                            }
+                            
+                            row += '</tr>';
+                            return row;
+                        }).join('');
+                    }
+                    document.querySelector('#materiais .loading').style.display = 'none';
+                    document.getElementById('tabelaMateriais').style.display = 'table';
+                });
+        }
+        
+        // Carregar materiais disponíveis para pedido
+        function carregarMateriaisDisponiveis() {
+            fetch('api.php?action=listar_materiais_disponiveis')
+                .then(r => r.json())
+                .then(data => {
+                    const select = document.getElementById('materialPedido');
+                    if(data.length === 0) {
+                        select.innerHTML = '<option value="">Nenhum material disponível</option>';
+                    } else {
+                        select.innerHTML = '<option value="">Selecione um material...</option>' + 
+                            data.map(m => `<option value="${m.id}">${m.tipo} - ${m.nome}${m.numero_serie ? ' (' + m.numero_serie + ')' : ''}</option>`).join('');
+                    }
+                });
+        }
+        
+        // Carregar empréstimos
+        function carregarEmprestimos() {
+            fetch('api.php?action=listar_emprestimos')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.querySelector('#tabelaEmprestimos tbody');
+                    
+                    if(data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 6}" style="text-align:center;">Nenhum empréstimo encontrado</td></tr>`;
+                    } else {
+                        tbody.innerHTML = data.map(e => {
+                            let row = '<tr>';
+                            
+                            if(isAdmin) {
+                                row += `<td>${e.usuario_nome}</td>`;
+                                row += `<td>${e.usuario_tipo}</td>`;
+                            }
+                            
+                            row += `<td>${e.material_nome}</td>`;
+                            row += `<td>${e.material_numero_serie || '-'}</td>`;
+                            row += `<td>${new Date(e.data_pedido).toLocaleDateString('pt-PT')}</td>`;
+                            row += `<td>${new Date(e.data_prevista_devolucao).toLocaleDateString('pt-PT')}</td>`;
+                            row += `<td><span class="badge badge-${e.status}">${e.status}</span></td>`;
+                            
+                            if(isAdmin && e.status === 'ativo') {
+                                row += `<td><button class="btn-success" onclick="devolverMaterial(${e.id}, ${e.material_id})">✓ Devolver</button></td>`;
+                            } else if(isAdmin) {
+                                row += '<td>-</td>';
+                            }
+                            
+                            row += '</tr>';
+                            return row;
+                        }).join('');
+                    }
+                    
+                    document.querySelector('#emprestimos .loading').style.display = 'none';
+                    document.getElementById('tabelaEmprestimos').style.display = 'table';
+                });
+        }
+        
+        // Carregar pedidos pendentes (admin)
+        function carregarPedidos() {
+            if(!isAdmin) return;
+            
+            fetch('api.php?action=listar_emprestimos')
+                .then(r => r.json())
+                .then(data => {
+                    const pendentes = data.filter(e => e.status === 'pendente');
+                    const tbody = document.querySelector('#tabelaPedidos tbody');
+                    
+                    if(pendentes.length === 0) {
+                        document.querySelector('#pedidos .loading').style.display = 'none';
+                        document.getElementById('emptyPedidos').style.display = 'block';
+                    } else {
+                        tbody.innerHTML = pendentes.map(e => {
+                            const anoTurma = e.usuario_ano && e.usuario_turma ? `${e.usuario_ano}º ${e.usuario_turma}` : '-';
+                            return `
+                                <tr>
+                                    <td>${e.usuario_nome}</td>
+                                    <td>${e.usuario_tipo}</td>
+                                    <td>${anoTurma}</td>
+                                    <td>${e.material_nome}</td>
+                                    <td>${new Date(e.data_pedido).toLocaleDateString('pt-PT')}</td>
+                                    <td>${new Date(e.data_prevista_devolucao).toLocaleDateString('pt-PT')}</td>
+                                    <td>${e.observacoes || '-'}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn-success" onclick="aprovarPedido(${e.id})">✓ Aprovar</button>
+                                            <button class="btn-danger" onclick="recusarPedido(${e.id})">✗ Recusar</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                        
+                        document.querySelector('#pedidos .loading').style.display = 'none';
+                        document.getElementById('tabelaPedidos').style.display = 'table';
+                    }
+                });
+        }
+        
+        // Carregar usuários (admin)
+        function carregarUsuarios() {
+            if(!isAdmin) return;
+            
+            fetch('api.php?action=listar_usuarios')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.querySelector('#tabelaUsuarios tbody');
+                    tbody.innerHTML = data.filter(u => u.is_admin == 0).map(u => {
+                        const anoTurma = u.ano && u.turma ? `${u.ano}º ${u.turma}` : '-';
+                        return `
+                            <tr>
+                                <td>${u.nome}</td>
+                                <td>${u.email}</td>
+                                <td>${u.tipo}</td>
+                                <td>${anoTurma}</td>
+                                <td>${u.numero_processo || '-'}</td>
+                                <td>${u.nif || '-'}</td>
+                                <td>${u.telefone || '-'}</td>
+                                <td>${u.tel_encarregado || '-'}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn-warning" onclick="editarUsuario(${u.id})">✏️ Editar</button>
+                                        <button class="btn-danger" onclick="eliminarUsuario(${u.id}, '${u.nome}')">🗑️ Eliminar</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                    
+                    document.querySelector('#usuarios .loading').style.display = 'none';
+                    document.getElementById('tabelaUsuarios').style.display = 'table';
+                });
+        }
+        
+        // Definir data mínima para hoje
+        const hoje = new Date().toISOString().split('T')[0];
+        document.getElementById('dataDevolucaoPedido').setAttribute('min', hoje);
+        
+        // Fazer pedido de empréstimo
+        function fazerPedido() {
+            const materialId = document.getElementById('materialPedido').value;
+            const dataDevolucao = document.getElementById('dataDevolucaoPedido').value;
+            const observacoes = document.getElementById('observacoesPedido').value;
+            
+            if(!materialId || !dataDevolucao) {
+                document.getElementById('mensagemPedido').innerHTML = '<div class="alert alert-error">Preencha todos os campos obrigatórios!</div>';
+                return;
+            }
+            
+            const dados = {
+                material_id: materialId,
+                data_prevista_devolucao: dataDevolucao,
+                observacoes: observacoes
+            };
+            
+            fetch('api.php?action=pedir_emprestimo', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(dados)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    document.getElementById('mensagemPedido').innerHTML = '<div class="alert alert-success">✅ Pedido enviado com sucesso! Aguarde aprovação do administrador.</div>';
+                    document.getElementById('materialPedido').value = '';
+                    document.getElementById('dataDevolucaoPedido').value = '';
+                    document.getElementById('observacoesPedido').value = '';
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    document.getElementById('mensagemPedido').innerHTML = `<div class="alert alert-error">❌ ${data.error || 'Erro ao enviar pedido'}</div>`;
+                }
+            });
+        }
+        
+        // Aprovar pedido (admin)
+        function aprovarPedido(id) {
+            if(!confirm('Aprovar este pedido de empréstimo?')) return;
+            
+            fetch('api.php?action=aprovar_pedido', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({pedido_id: id})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert('✅ Pedido aprovado com sucesso!');
+                    location.reload();
+                }
+            });
+        }
+        
+        // Recusar pedido (admin)
+        function recusarPedido(id) {
+            if(!confirm('Recusar este pedido de empréstimo?')) return;
+            
+            fetch('api.php?action=recusar_pedido', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({pedido_id: id})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert('❌ Pedido recusado!');
+                    location.reload();
+                }
+            });
+        }
+        
+        // Devolver material (admin)
+        function devolverMaterial(emprestimoId, materialId) {
+            if(!confirm('Confirmar devolução deste material?')) return;
+            
+            fetch('api.php?action=devolver', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    emprestimo_id: emprestimoId,
+                    material_id: materialId
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert('✅ Material devolvido com sucesso!');
+                    location.reload();
+                } else {
+                    alert('❌ Erro ao devolver material: ' + (data.error || 'Erro desconhecido'));
+                }
+            });
+        }
