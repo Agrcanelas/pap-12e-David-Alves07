@@ -535,6 +535,13 @@ $userTipo = $_SESSION['user_tipo'];
                 <h3>⏳ Pedidos Pendentes</h3>
                 <div class="number" id="stat-pendentes">-</div>
             </div>
+            <div class="tabs">
+    <button class="tab active" onclick="showSection('materiais')">📦 Materiais</button>
+    <?php if($isAdmin): ?>
+    <button class="tab" onclick="showSection('pedidos')">⏳ Pedidos Pendentes</button>
+    <a href="relatorios.php" class="tab" style="text-decoration: none;">📊 Relatórios</a>
+    <?php endif; ?>
+    <button class="tab" onclick="showSection('emprestimos')">📋 <?php echo $isAdmin ? 'Todos os Empréstimos' : 'Meus Empréstimos'; ?></button>
             <div class="stat-card">
                 <h3>👥 Utilizadores</h3>
                 <div class="number" id="stat-usuarios">-</div>
