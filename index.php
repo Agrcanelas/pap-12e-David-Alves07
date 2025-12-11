@@ -568,9 +568,10 @@ $userTipo = $_SESSION['user_tipo'];
             <!-- Seção Materiais -->
             <div id="materiais" class="section active">
                 <div class="section-header">
-                    <div class="search-box">
-                    <input type="text" class="search-input" id="searchMateriais" placeholder="🔍 Pesquisar materiais..." onkeyup="filtrarMateriais()">
                 </div>
+                 <div class="search-box">
+        <input type="text" class="search-input" id="searchMateriais" placeholder="🔍 Pesquisar materiais..." onkeyup="filtrarMateriais()">
+    </div>
                     <h2>📦 Materiais</h2>
                     <?php if($isAdmin): ?>
                     <button class="btn-primary" onclick="abrirModalNovoMaterial()">➕ Adicionar Material</button>
