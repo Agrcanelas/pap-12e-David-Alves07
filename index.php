@@ -1108,3 +1108,247 @@ $userTipo = $_SESSION['user_tipo'];
                 }
             });
         }
+        <?php if($isAdmin): ?>
+        // === GESTÃO DE MATERIAIS ===
+        
+        function abrirModalNovoMaterial() {
+            document.getElementById('tituloModalMaterial').textContent = 'Adicionar Material';
+            document.getElementById('formMaterial').reset();
+            document.getElementById('materialId').value = '';
+            document.getElementById('mensagemModalMaterial').innerHTML = '';
+            document.getElementById('modalMaterial').classList.add('show');
+        }
+        
+        function editarMaterial(id) {
+            document.getElementById('tituloModalMaterial').textContent = 'Editar Material';
+            document.getElementById('mensagemModalMaterial').innerHTML = '';
+            
+            fetch(`api.php?action=obter_material&id=${id}`)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('materialId').value = data.id;
+                    document.getElementById('materialNome').value = data.nome;
+                    document.getElementById('materialTipo').value = data.tipo;
+                    document.getElementById('materialNumeroSerie').value = data.numero_serie || '';
+                    document.getElementById('materialStatus').value = data.status;
+                    document.getElementById('modalMaterial').classList.add('show');
+                });
+        }
+        
+        function salvarMaterial(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('materialId').value;
+            const dados = {
+                id: id || null,
+                nome: document.getElementById('materialNome').value,
+                tipo: document.getElementById('materialTipo').value,
+                numero_serie: document.getElementById('materialNumeroSerie').value || null,
+                status: document.getElementById('materialStatus').value
+            };
+            
+            const action = id ? 'editar_material' : 'adicionar_material';
+            
+            fetch(`api.php?action=${action}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(dados)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert(`✅ Material ${id ? 'atualizado' : 'adicionado'} com sucesso!`);
+                    fecharModalMaterial();
+                    carregarMateriais();
+                    carregarMateriaisDisponiveis();
+                    carregarEstatisticas();
+                } else {
+                    document.getElementById('mensagemModalMaterial').innerHTML = '<div class="alert alert-error">❌ Erro ao guardar material</div>';
+                }
+            })
+            .catch(err => {
+                document.getElementById('mensagemModalMaterial').innerHTML = '<div class="alert alert-error">❌ Erro de conexão</div>';
+            });
+        }
+        
+        function eliminarMaterial(id, nome) {
+            if(!confirm(`Tem certeza que deseja eliminar o material "${nome}"?\n\nEsta ação não pode ser desfeita!`)) return;
+            
+            fetch('api.php?action=eliminar_material', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert('✅ Material eliminado com sucesso!');
+                    carregarMateriais();
+                    carregarEstatisticas();
+                } else {
+                    alert('❌ ' + (data.error || 'Erro ao eliminar material'));
+                }
+            });
+        }
+        
+        function fecharModalMaterial() {
+            document.getElementById('modalMaterial').classList.remove('show');
+        }
+        
+        // === GESTÃO DE UTILIZADORES ===
+        
+        function abrirModalNovoUsuario() {
+            document.getElementById('tituloModalUsuario').textContent = 'Adicionar Utilizador';
+            document.getElementById('formUsuario').reset();
+            document.getElementById('usuarioId').value = '';
+            document.getElementById('mensagemModalUsuario').innerHTML = '';
+            document.getElementById('senhaOpcional').textContent = '';
+            document.getElementById('usuarioSenha').required = true;
+            document.getElementById('camposAluno').style.display = 'none';
+            document.getElementById('modalUsuario').classList.add('show');
+        }
+        
+        function editarUsuario(id) {
+            document.getElementById('tituloModalUsuario').textContent = 'Editar Utilizador';
+            document.getElementById('mensagemModalUsuario').innerHTML = '';
+            document.getElementById('senhaOpcional').textContent = '(deixe em branco para manter)';
+            document.getElementById('usuarioSenha').required = false;
+            
+            fetch(`api.php?action=obter_usuario&id=${id}`)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('usuarioId').value = data.id;
+                    document.getElementById('usuarioNome').value = data.nome;
+                    document.getElementById('usuarioEmail').value = data.email;
+                    document.getElementById('usuarioSenha').value = '';
+                    document.getElementById('usuarioTelefone').value = data.telefone || '';
+                    document.getElementById('usuarioTipo').value = data.tipo;
+                    
+                    if(data.tipo === 'aluno') {
+                        document.getElementById('usuarioAno').value = data.ano || '';
+                        document.getElementById('usuarioTurma').value = data.turma || '';
+                        document.getElementById('usuarioNumeroProcesso').value = data.numero_processo || '';
+                        document.getElementById('usuarioNif').value = data.nif || '';
+                        document.getElementById('usuarioTelEncarregado').value = data.tel_encarregado || '';
+                        document.getElementById('camposAluno').style.display = 'block';
+                    } else {
+                        document.getElementById('camposAluno').style.display = 'none';
+                    }
+                    
+                    document.getElementById('modalUsuario').classList.add('show');
+                });
+        }
+        
+        function toggleCamposAluno() {
+            const tipo = document.getElementById('usuarioTipo').value;
+            const camposAluno = document.getElementById('camposAluno');
+            
+            if(tipo === 'aluno') {
+                camposAluno.style.display = 'block';
+            } else {
+                camposAluno.style.display = 'none';
+                // Limpar campos de aluno
+                document.getElementById('usuarioAno').value = '';
+                document.getElementById('usuarioTurma').value = '';
+                document.getElementById('usuarioNumeroProcesso').value = '';
+                document.getElementById('usuarioNif').value = '';
+                document.getElementById('usuarioTelEncarregado').value = '';
+            }
+        }
+        
+        function salvarUsuario(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('usuarioId').value;
+            const senha = document.getElementById('usuarioSenha').value;
+            
+            // Validar senha ao criar novo usuário
+            if(!id && senha.length < 6) {
+                document.getElementById('mensagemModalUsuario').innerHTML = '<div class="alert alert-error">❌ A senha deve ter no mínimo 6 caracteres</div>';
+                return;
+            }
+            
+            const dados = {
+                id: id || null,
+                nome: document.getElementById('usuarioNome').value,
+                email: document.getElementById('usuarioEmail').value,
+                senha: senha || null,
+                telefone: document.getElementById('usuarioTelefone').value || null,
+                tipo: document.getElementById('usuarioTipo').value,
+                ano: document.getElementById('usuarioAno').value || null,
+                turma: document.getElementById('usuarioTurma').value || null,
+                numero_processo: document.getElementById('usuarioNumeroProcesso').value || null,
+                nif: document.getElementById('usuarioNif').value || null,
+                tel_encarregado: document.getElementById('usuarioTelEncarregado').value || null
+            };
+            
+            const action = id ? 'editar_usuario' : 'adicionar_usuario';
+            
+            fetch(`api.php?action=${action}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(dados)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert(`✅ Utilizador ${id ? 'atualizado' : 'adicionado'} com sucesso!`);
+                    fecharModalUsuario();
+                    carregarUsuarios();
+                    carregarEstatisticas();
+                } else {
+                    document.getElementById('mensagemModalUsuario').innerHTML = '<div class="alert alert-error">❌ Erro ao guardar utilizador. Verifique se o email já existe.</div>';
+                }
+            })
+            .catch(err => {
+                document.getElementById('mensagemModalUsuario').innerHTML = '<div class="alert alert-error">❌ Erro de conexão</div>';
+            });
+        }
+        
+        function eliminarUsuario(id, nome) {
+            if(!confirm(`Tem certeza que deseja eliminar o utilizador "${nome}"?\n\nEsta ação não pode ser desfeita!`)) return;
+            
+            fetch('api.php?action=eliminar_usuario', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert('✅ Utilizador eliminado com sucesso!');
+                    carregarUsuarios();
+                    carregarEstatisticas();
+                } else {
+                    alert('❌ ' + (data.error || 'Erro ao eliminar utilizador'));
+                }
+            });
+        }
+        
+        function fecharModalUsuario() {
+            document.getElementById('modalUsuario').classList.remove('show');
+        }
+        
+        // Fechar modal ao clicar fora
+        window.onclick = function(event) {
+            if(event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+        <?php endif; ?>
+        
+        // === CARREGAR DADOS AO INICIAR ===
+        window.onload = function() {
+            carregarMateriais();
+            carregarMateriaisDisponiveis();
+            carregarEmprestimos();
+            
+            if(isAdmin) {
+                carregarEstatisticas();
+                carregarPedidos();
+                carregarUsuarios();
+            }
+        }
+    </script>
+</body>
+</html>
