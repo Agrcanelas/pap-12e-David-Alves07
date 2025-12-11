@@ -681,3 +681,145 @@ $userTipo = $_SESSION['user_tipo'];
             <?php endif; ?>
         </div>
     </div>
+    <?php if($isAdmin): ?>
+    <!-- Modal Adicionar/Editar Material -->
+    <div id="modalMaterial" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="tituloModalMaterial">Adicionar Material</h3>
+                <button class="close" onclick="fecharModalMaterial()">&times;</button>
+            </div>
+            <div id="mensagemModalMaterial"></div>
+            <form id="formMaterial" onsubmit="salvarMaterial(event)">
+                <input type="hidden" id="materialId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nome *</label>
+                        <input type="text" id="materialNome" required placeholder="Ex: Portátil 1">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo *</label>
+                        <select id="materialTipo" required>
+                            <option value="">Selecione...</option>
+                            <option value="Portátil">Portátil</option>
+                            <option value="Tablet">Tablet</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Número de Série</label>
+                        <input type="text" id="materialNumeroSerie" placeholder="Ex: SN-PORT-2024-001">
+                    </div>
+                    <div class="form-group">
+                        <label>Status *</label>
+                        <select id="materialStatus" required>
+                            <option value="disponivel">Disponível</option>
+                            <option value="manutencao">Manutenção</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="fecharModalMaterial()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Adicionar/Editar Utilizador -->
+    <div id="modalUsuario" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="tituloModalUsuario">Adicionar Utilizador</h3>
+                <button class="close" onclick="fecharModalUsuario()">&times;</button>
+            </div>
+            <div id="mensagemModalUsuario"></div>
+            <form id="formUsuario" onsubmit="salvarUsuario(event)">
+                <input type="hidden" id="usuarioId">
+                
+                <div class="form-group">
+                    <label>Nome Completo *</label>
+                    <input type="text" id="usuarioNome" required placeholder="Ex: João Silva">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="usuarioEmail" required placeholder="exemplo@canelas.pt">
+                    </div>
+                    <div class="form-group">
+                        <label>Senha * <span class="optional" id="senhaOpcional"></span></label>
+                        <input type="password" id="usuarioSenha" placeholder="Mínimo 6 caracteres">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="text" id="usuarioTelefone" placeholder="912345678">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo *</label>
+                        <select id="usuarioTipo" required onchange="toggleCamposAluno()">
+                            <option value="">Selecione...</option>
+                            <option value="aluno">Aluno</option>
+                            <option value="professor">Professor</option>
+                            <option value="funcionario">Funcionário</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="camposAluno" style="display:none;">
+                    <h4 style="margin: 20px 0 15px; color: #667eea;">Dados do Aluno</h4>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Ano</label>
+                            <select id="usuarioAno">
+                                <option value="">Selecione...</option>
+                                <option value="7">7º Ano</option>
+                                <option value="8">8º Ano</option>
+                                <option value="9">9º Ano</option>
+                                <option value="10">10º Ano</option>
+                                <option value="11">11º Ano</option>
+                                <option value="12">12º Ano</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Turma</label>
+                            <input type="text" id="usuarioTurma" placeholder="Ex: A, B, C" maxlength="10">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Número de Processo</label>
+                            <input type="text" id="usuarioNumeroProcesso" placeholder="Ex: P2024001">
+                        </div>
+                        <div class="form-group">
+                            <label>NIF</label>
+                            <input type="text" id="usuarioNif" placeholder="9 dígitos" maxlength="9">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Telefone do Encarregado de Educação</label>
+                        <input type="text" id="usuarioTelEncarregado" placeholder="912345678">
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="fecharModalUsuario()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php endif; ?>
+    
+    <script>
+        const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
