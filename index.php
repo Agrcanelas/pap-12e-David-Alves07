@@ -164,9 +164,17 @@ $userTipo = $_SESSION['user_tipo'];
             display: block;
         }
         
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
         .section h2 {
             color: #333;
-            margin-bottom: 20px;
             font-size: 22px;
         }
         
@@ -187,6 +195,12 @@ $userTipo = $_SESSION['user_tipo'];
             font-weight: 600;
             color: #333;
             font-size: 14px;
+        }
+        
+        label .optional {
+            font-weight: normal;
+            color: #999;
+            font-size: 12px;
         }
         
         input, select, textarea {
@@ -237,6 +251,22 @@ $userTipo = $_SESSION['user_tipo'];
             background: #218838;
         }
         
+        button.btn-warning {
+            background: #ffc107;
+            color: #333;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        button.btn-warning:hover {
+            background: #e0a800;
+        }
+        
         button.btn-danger {
             background: #dc3545;
             color: white;
@@ -251,6 +281,23 @@ $userTipo = $_SESSION['user_tipo'];
         
         button.btn-danger:hover {
             background: #c82333;
+        }
+        
+        button.btn-secondary {
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+        
+        button.btn-secondary:hover {
+            background: #5a6268;
         }
         
         .table-container {
@@ -333,6 +380,7 @@ $userTipo = $_SESSION['user_tipo'];
         .btn-group {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
         
         .empty-state {
@@ -355,6 +403,72 @@ $userTipo = $_SESSION['user_tipo'];
         .empty-state p {
             color: #999;
             font-size: 14px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            color: #333;
+            font-size: 20px;
+        }
+        
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+        }
+        
+        .close:hover {
+            color: #333;
+        }
+        
+        .modal-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
     </style>
 </head>
@@ -383,442 +497,3 @@ $userTipo = $_SESSION['user_tipo'];
                 <a href="logout.php" class="btn-logout">Sair</a>
             </div>
         </div>
-        
-        <?php if($isAdmin): ?>
-        <div class="stats" id="statsContainer">
-            <div class="stat-card">
-                <h3>📦 Total Materiais</h3>
-                <div class="number" id="stat-total">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>✅ Disponíveis</h3>
-                <div class="number" id="stat-disponiveis">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>📤 Emprestados</h3>
-                <div class="number" id="stat-emprestados">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>⏳ Pedidos Pendentes</h3>
-                <div class="number" id="stat-pendentes">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>👥 Utilizadores</h3>
-                <div class="number" id="stat-usuarios">-</div>
-            </div>
-        </div>
-        <?php endif; ?>
-        
-        <div class="tabs">
-            <button class="tab active" onclick="showSection('materiais')">📦 Materiais</button>
-            <?php if($isAdmin): ?>
-            <button class="tab" onclick="showSection('pedidos')">⏳ Pedidos Pendentes</button>
-            <?php endif; ?>
-            <button class="tab" onclick="showSection('emprestimos')">📋 <?php echo $isAdmin ? 'Todos os Empréstimos' : 'Meus Empréstimos'; ?></button>
-            <button class="tab" onclick="showSection('pedir')">➕ Pedir Empréstimo</button>
-            <?php if($isAdmin): ?>
-            <button class="tab" onclick="showSection('usuarios')">👥 Utilizadores</button>
-            <?php endif; ?>
-        </div>
-        
-        <div class="content">
-            <!-- Seção Materiais -->
-            <div id="materiais" class="section active">
-                <h2>📦 Materiais Disponíveis</h2>
-                <div class="loading">A carregar materiais...</div>
-                <div class="table-container">
-                    <table class="table" id="tabelaMateriais" style="display:none;">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Tipo</th>
-                                <th>Número de Série</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <?php if($isAdmin): ?>
-            <!-- Seção Pedidos Pendentes -->
-            <div id="pedidos" class="section">
-                <h2>⏳ Pedidos Pendentes de Aprovação</h2>
-                <div class="loading">A carregar pedidos...</div>
-                <div class="table-container">
-                    <table class="table" id="tabelaPedidos" style="display:none;">
-                        <thead>
-                            <tr>
-                                <th>Utilizador</th>
-                                <th>Tipo</th>
-                                <th>Ano/Turma</th>
-                                <th>Material</th>
-                                <th>Data Pedido</th>
-                                <th>Prev. Devolução</th>
-                                <th>Observações</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <div id="emptyPedidos" style="display:none;">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">✅</div>
-                        <h3>Nenhum pedido pendente</h3>
-                        <p>Não há pedidos à espera de aprovação</p>
-                    </div>
-                </div>
-            </div>
-            <?php endif; ?>
-            
-            <!-- Seção Empréstimos -->
-            <div id="emprestimos" class="section">
-                <h2>📋 <?php echo $isAdmin ? 'Histórico de Empréstimos' : 'Meus Empréstimos'; ?></h2>
-                <div class="loading">A carregar empréstimos...</div>
-                <div class="table-container">
-                    <table class="table" id="tabelaEmprestimos" style="display:none;">
-                        <thead>
-                            <tr>
-                                <?php if($isAdmin): ?>
-                                <th>Utilizador</th>
-                                <th>Tipo</th>
-                                <?php endif; ?>
-                                <th>Material</th>
-                                <th>Nº Série</th>
-                                <th>Data Pedido</th>
-                                <th>Prev. Devolução</th>
-                                <th>Status</th>
-                                <?php if($isAdmin): ?>
-                                <th>Ações</th>
-                                <?php endif; ?>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Seção Pedir Empréstimo -->
-            <div id="pedir" class="section">
-                <h2>➕ Pedir Empréstimo</h2>
-                <div id="mensagemPedido"></div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Material</label>
-                        <select id="materialPedido" required>
-                            <option value="">A carregar...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Data Prevista de Devolução</label>
-                        <input type="date" id="dataDevolucaoPedido" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>Observações / Motivo do Pedido</label>
-                    <textarea id="observacoesPedido" rows="3" placeholder="Ex: Preciso para trabalho de grupo de matemática..."></textarea>
-                </div>
-                
-                <button class="btn-primary" onclick="fazerPedido()">Enviar Pedido</button>
-                
-                <div class="alert alert-info" style="margin-top: 20px;">
-                    <strong>ℹ️ Informação:</strong> O seu pedido será enviado para aprovação do administrador. Será notificado quando for aprovado ou recusado.
-                </div>
-            </div>
-            
-            <?php if($isAdmin): ?>
-            <!-- Seção Usuários -->
-            <div id="usuarios" class="section">
-                <h2>👥 Utilizadores do Sistema</h2>
-                <div class="loading">A carregar utilizadores...</div>
-                <div class="table-container">
-                    <table class="table" id="tabelaUsuarios" style="display:none;">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Email</th>
-                                <th>Tipo</th>
-                                <th>Ano/Turma</th>
-                                <th>Nº Processo</th>
-                                <th>NIF</th>
-                                <th>Telefone</th>
-                                <th>Tel. Encarregado</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-            <?php endif; ?>
-        </div>
-    </div>
-    
-    <script>
-        const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
-        
-        function showSection(id) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            event.target.classList.add('active');
-        }
-        
-        // Carregar estatísticas (admin)
-        if(isAdmin) {
-            fetch('api.php?action=estatisticas')
-                .then(r => r.json())
-                .then(data => {
-                    document.getElementById('stat-total').textContent = data.total_materiais;
-                    document.getElementById('stat-disponiveis').textContent = data.materiais_disponiveis;
-                    document.getElementById('stat-emprestados').textContent = data.materiais_emprestados;
-                    document.getElementById('stat-pendentes').textContent = data.pedidos_pendentes;
-                    document.getElementById('stat-usuarios').textContent = data.total_usuarios;
-                });
-        }
-        
-        // Carregar materiais
-        fetch('api.php?action=listar_materiais')
-            .then(r => r.json())
-            .then(data => {
-                const tbody = document.querySelector('#tabelaMateriais tbody');
-                if(data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum material cadastrado</td></tr>';
-                } else {
-                    tbody.innerHTML = data.map(m => `
-                        <tr>
-                            <td>${m.nome}</td>
-                            <td>${m.tipo}</td>
-                            <td>${m.numero_serie || '-'}</td>
-                            <td><span class="badge badge-${m.status}">${m.status}</span></td>
-                        </tr>
-                    `).join('');
-                }
-                document.querySelector('#materiais .loading').style.display = 'none';
-                document.getElementById('tabelaMateriais').style.display = 'table';
-            });
-        
-        // Carregar materiais disponíveis para pedido
-        fetch('api.php?action=listar_materiais_disponiveis')
-            .then(r => r.json())
-            .then(data => {
-                const select = document.getElementById('materialPedido');
-                if(data.length === 0) {
-                    select.innerHTML = '<option value="">Nenhum material disponível</option>';
-                } else {
-                    select.innerHTML = '<option value="">Selecione um material...</option>' + 
-                        data.map(m => `<option value="${m.id}">${m.tipo} - ${m.nome} (${m.numero_serie})</option>`).join('');
-                }
-            });
-        
-        // Carregar empréstimos
-        fetch('api.php?action=listar_emprestimos')
-            .then(r => r.json())
-            .then(data => {
-                const tbody = document.querySelector('#tabelaEmprestimos tbody');
-                
-                if(data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 6}" style="text-align:center;">Nenhum empréstimo encontrado</td></tr>`;
-                } else {
-                    tbody.innerHTML = data.map(e => {
-                        let row = '<tr>';
-                        
-                        if(isAdmin) {
-                            const anoTurma = e.usuario_ano && e.usuario_turma ? `${e.usuario_ano}º ${e.usuario_turma}` : '-';
-                            row += `<td>${e.usuario_nome}</td>`;
-                            row += `<td>${e.usuario_tipo}</td>`;
-                        }
-                        
-                        row += `<td>${e.material_nome}</td>`;
-                        row += `<td>${e.material_numero_serie || '-'}</td>`;
-                        row += `<td>${new Date(e.data_pedido).toLocaleDateString('pt-PT')}</td>`;
-                        row += `<td>${new Date(e.data_prevista_devolucao).toLocaleDateString('pt-PT')}</td>`;
-                        row += `<td><span class="badge badge-${e.status}">${e.status}</span></td>`;
-                        
-                        if(isAdmin && e.status === 'ativo') {
-                            row += `<td><button class="btn-success" onclick="devolverMaterial(${e.id}, ${e.material_id})">Devolver</button></td>`;
-                        } else if(isAdmin) {
-                            row += '<td>-</td>';
-                        }
-                        
-                        row += '</tr>';
-                        return row;
-                    }).join('');
-                }
-                
-                document.querySelector('#emprestimos .loading').style.display = 'none';
-                document.getElementById('tabelaEmprestimos').style.display = 'table';
-            });
-        
-        // Carregar pedidos pendentes (admin)
-        if(isAdmin) {
-            fetch('api.php?action=listar_emprestimos')
-                .then(r => r.json())
-                .then(data => {
-                    const pendentes = data.filter(e => e.status === 'pendente');
-                    const tbody = document.querySelector('#tabelaPedidos tbody');
-                    
-                    if(pendentes.length === 0) {
-                        document.querySelector('#pedidos .loading').style.display = 'none';
-                        document.getElementById('emptyPedidos').style.display = 'block';
-                    } else {
-                        tbody.innerHTML = pendentes.map(e => {
-                            const anoTurma = e.usuario_ano && e.usuario_turma ? `${e.usuario_ano}º ${e.usuario_turma}` : '-';
-                            return `
-                                <tr>
-                                    <td>${e.usuario_nome}</td>
-                                    <td>${e.usuario_tipo}</td>
-                                    <td>${anoTurma}</td>
-                                    <td>${e.material_nome}</td>
-                                    <td>${new Date(e.data_pedido).toLocaleDateString('pt-PT')}</td>
-                                    <td>${new Date(e.data_prevista_devolucao).toLocaleDateString('pt-PT')}</td>
-                                    <td>${e.observacoes || '-'}</td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <button class="btn-success" onclick="aprovarPedido(${e.id})">✓ Aprovar</button>
-                                            <button class="btn-danger" onclick="recusarPedido(${e.id})">✗ Recusar</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('');
-                        
-                        document.querySelector('#pedidos .loading').style.display = 'none';
-                        document.getElementById('tabelaPedidos').style.display = 'table';
-                    }
-                });
-            
-            // Carregar usuários
-            fetch('api.php?action=listar_usuarios')
-                .then(r => r.json())
-                .then(data => {
-                    const tbody = document.querySelector('#tabelaUsuarios tbody');
-                    tbody.innerHTML = data.filter(u => u.is_admin == 0).map(u => {
-                        const anoTurma = u.ano && u.turma ? `${u.ano}º ${u.turma}` : '-';
-                        return `
-                            <tr>
-                                <td>${u.nome}</td>
-                                <td>${u.email}</td>
-                                <td>${u.tipo}</td>
-                                <td>${anoTurma}</td>
-                                <td>${u.numero_processo || '-'}</td>
-                                <td>${u.nif || '-'}</td>
-                                <td>${u.telefone || '-'}</td>
-                                <td>${u.tel_encarregado || '-'}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                    
-                    document.querySelector('#usuarios .loading').style.display = 'none';
-                    document.getElementById('tabelaUsuarios').style.display = 'table';
-                });
-        }
-        
-        // Definir data mínima para hoje
-        const hoje = new Date().toISOString().split('T')[0];
-        document.getElementById('dataDevolucaoPedido').setAttribute('min', hoje);
-        
-        // Fazer pedido de empréstimo
-        function fazerPedido() {
-            const materialId = document.getElementById('materialPedido').value;
-            const dataDevolucao = document.getElementById('dataDevolucaoPedido').value;
-            const observacoes = document.getElementById('observacoesPedido').value;
-            
-            if(!materialId || !dataDevolucao) {
-                document.getElementById('mensagemPedido').innerHTML = '<div class="alert alert-error">Preencha todos os campos obrigatórios!</div>';
-                return;
-            }
-            
-            const dados = {
-                material_id: materialId,
-                data_prevista_devolucao: dataDevolucao,
-                observacoes: observacoes
-            };
-            
-            fetch('api.php?action=pedir_emprestimo', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(dados)
-            })
-            .then(r => r.json())
-            .then(data => {
-                if(data.success) {
-                    document.getElementById('mensagemPedido').innerHTML = '<div class="alert alert-success">✅ Pedido enviado com sucesso! Aguarde aprovação do administrador.</div>';
-                    document.getElementById('materialPedido').value = '';
-                    document.getElementById('dataDevolucaoPedido').value = '';
-                    document.getElementById('observacoesPedido').value = '';
-                    setTimeout(() => location.reload(), 2000);
-                } else {
-                    document.getElementById('mensagemPedido').innerHTML = `<div class="alert alert-error">❌ ${data.error || 'Erro ao enviar pedido'}</div>`;
-                }
-            });
-        }
-        
-        // Aprovar pedido (admin)
-        function aprovarPedido(id) {
-            if(!confirm('Aprovar este pedido de empréstimo?')) return;
-            
-            fetch('api.php?action=aprovar_pedido', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({pedido_id: id})
-            })
-            .then(r => r.json())
-            .then(data => {
-                if(data.success) {
-                    alert('✅ Pedido aprovado com sucesso!');
-                    location.reload();
-                }
-            });
-        }
-        
-        // Recusar pedido (admin)
-        function recusarPedido(id) {
-            if(!confirm('Recusar este pedido de empréstimo?')) return;
-            
-            fetch('api.php?action=recusar_pedido', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({pedido_id: id})
-            })
-            .then(r => r.json())
-            .then(data => {
-                if(data.success) {
-                    alert('❌ Pedido recusado!');
-                    location.reload();
-                }
-            });
-        }
-        
-        // Devolver material (admin)
-        function devolverMaterial(emprestimoId, materialId) {
-            if(!confirm('Confirmar devolução deste material?')) return;
-            
-            fetch('api.php?action=devolver', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    emprestimo_id: emprestimoId,
-                    material_id: materialId
-                })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if(data.success) {
-                    alert('✅ Material devolvido com sucesso!');
-                    location.reload();
-                } else {
-                    alert('❌ Erro ao devolver material: ' + (data.error || 'Erro desconhecido'));
-                }
-            })
-            .catch(err => {
-                alert('❌ Erro de conexão');
-                console.error(err);
-            });
-        }
-    </script>
-</body>
-</html>
