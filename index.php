@@ -1389,6 +1389,87 @@ $userTipo = $_SESSION['user_tipo'];
                 carregarUsuarios();
             }
         }
+
+// === FUNÇÕES DE PESQUISA ===
+        
+        function filtrarMateriais() {
+            const input = document.getElementById('searchMateriais');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('tabelaMateriais');
+            const rows = table.getElementsByTagName('tr');
+            
+            for(let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                let found = false;
+                
+                for(let j = 0; j < cells.length - 1; j++) {
+                    const cell = cells[j];
+                    if(cell) {
+                        const text = cell.textContent || cell.innerText;
+                        if(text.toLowerCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                
+                row.style.display = found ? '' : 'none';
+            }
+        }
+        
+        function filtrarEmprestimos() {
+            const input = document.getElementById('searchEmprestimos');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('tabelaEmprestimos');
+            const rows = table.getElementsByTagName('tr');
+            
+            for(let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                let found = false;
+                
+                for(let j = 0; j < cells.length - 1; j++) {
+                    const cell = cells[j];
+                    if(cell) {
+                        const text = cell.textContent || cell.innerText;
+                        if(text.toLowerCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                
+                row.style.display = found ? '' : 'none';
+            }
+        }
+        
+        function filtrarUsuarios() {
+            const input = document.getElementById('searchUsuarios');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('tabelaUsuarios');
+            const rows = table.getElementsByTagName('tr');
+            
+            for(let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                let found = false;
+                
+                for(let j = 0; j < cells.length - 1; j++) {
+                    const cell = cells[j];
+                    if(cell) {
+                        const text = cell.textContent || cell.innerText;
+                        if(text.toLowerCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                
+                row.style.display = found ? '' : 'none';
+            }
+        }
+
     </script>
 </body>
 </html>
