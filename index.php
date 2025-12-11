@@ -470,6 +470,26 @@ $userTipo = $_SESSION['user_tipo'];
             justify-content: flex-end;
             gap: 10px;
         }
+
+.search-box {
+            margin-bottom: 15px;
+        }
+        
+        .search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
     </style>
 </head>
 <body>
