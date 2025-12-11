@@ -394,6 +394,188 @@ $stmt = $db->query("SELECT * FROM materiais WHERE status = 'disponivel' ORDER BY
         }
         break;
 
+case 'verificar_atrasos':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        
+        // Atualizar status para atrasado automaticamente
+        $stmt = $db->query("
+            UPDATE emprestimos 
+            SET status = 'atrasado' 
+            WHERE status = 'ativo' 
+            AND data_prevista_devolucao < CURDATE()
+        ");
+        
+        // Contar empréstimos atrasados
+        $stmt = $db->query("SELECT COUNT(*) as total FROM emprestimos WHERE status = 'atrasado'");
+        $total = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+        
+        echo json_encode(['success' => true, 'total_atrasados' => $total]);
+        break;
+        
+    case 'listar_atrasados':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        
+        $stmt = $db->query("
+            SELECT e.*, 
+                   u.nome as usuario_nome, 
+                   u.email as usuario_email,
+                   u.telefone as usuario_telefone,
+                   u.tipo as usuario_tipo,
+                   m.nome as material_nome, 
+                   m.tipo as material_tipo,
+                   DATEDIFF(CURDATE(), e.data_prevista_devolucao) as dias_atraso
+            FROM emprestimos e
+            JOIN usuarios u ON e.usuario_id = u.id
+            JOIN materiais m ON e.material_id = m.id
+            WHERE e.status = 'atrasado'
+            ORDER BY dias_atraso DESC
+        ");
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        break;
+        
+    case 'relatorio_materiais':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        
+        // Materiais mais requisitados
+        $stmt = $db->query("
+            SELECT m.nome, m.tipo, COUNT(e.id) as total_emprestimos
+            FROM materiais m
+            LEFT JOIN emprestimos e ON m.id = e.material_id
+            GROUP BY m.id
+            ORDER BY total_emprestimos DESC
+            LIMIT 10
+        ");
+        $mais_requisitados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Status geral
+        $stmt = $db->query("
+            SELECT status, COUNT(*) as total 
+            FROM materiais 
+            GROUP BY status
+        ");
+        $status_geral = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        echo json_encode([
+            'mais_requisitados' => $mais_requisitados,
+            'status_geral' => $status_geral
+        ]);
+        break;
+        
+    case 'relatorio_usuarios':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        
+        // Top utilizadores
+        $stmt = $db->query("
+            SELECT u.nome, u.tipo, COUNT(e.id) as total_emprestimos,
+                   SUM(CASE WHEN e.status = 'atrasado' THEN 1 ELSE 0 END) as total_atrasos
+            FROM usuarios u
+            LEFT JOIN emprestimos e ON u.id = e.usuario_id
+            WHERE u.is_admin = 0
+            GROUP BY u.id
+            ORDER BY total_emprestimos DESC
+            LIMIT 10
+        ");
+        $top_usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Empréstimos por tipo de utilizador
+        $stmt = $db->query("
+            SELECT u.tipo, COUNT(e.id) as total
+            FROM usuarios u
+            JOIN emprestimos e ON u.id = e.usuario_id
+            GROUP BY u.tipo
+        ");
+        $por_tipo = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        echo json_encode([
+            'top_usuarios' => $top_usuarios,
+            'por_tipo' => $por_tipo
+        ]);
+        break;
+        
+    case 'exportar_emprestimos':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        
+        $stmt = $db->query("
+            SELECT 
+                e.id,
+                u.nome as utilizador,
+                u.tipo as tipo_utilizador,
+                m.nome as material,
+                m.tipo as tipo_material,
+                m.numero_serie,
+                e.data_pedido,
+                e.data_prevista_devolucao,
+                e.data_devolucao,
+                e.status,
+                e.observacoes
+            FROM emprestimos e
+            JOIN usuarios u ON e.usuario_id = u.id
+            JOIN materiais m ON e.material_id = m.id
+            ORDER BY e.data_pedido DESC
+        ");
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        break;
+        
+    case 'exportar_materiais':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        
+        $stmt = $db->query("
+            SELECT 
+                id,
+                nome,
+                tipo,
+                numero_serie,
+                status,
+                data_cadastro
+            FROM materiais
+            ORDER BY tipo, nome
+        ");
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        break;
+        
+    case 'exportar_usuarios':
+        if(!$isAdmin) {
+            echo json_encode(['error' => 'Sem permissão']);
+            break;
+        }
+        
+        $stmt = $db->query("
+            SELECT 
+                nome,
+                email,
+                telefone,
+                tipo,
+                ano,
+                turma,
+                numero_processo,
+                nif,
+                tel_encarregado,
+                data_cadastro
+            FROM usuarios
+            WHERE is_admin = 0
+            ORDER BY tipo, nome
+        ");
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        break;
+
     default:
         echo json_encode(['error' => 'Ação inválida']);
 }
