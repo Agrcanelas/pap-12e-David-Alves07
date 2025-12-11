@@ -497,3 +497,187 @@ $userTipo = $_SESSION['user_tipo'];
                 <a href="logout.php" class="btn-logout">Sair</a>
             </div>
         </div>
+        <?php if($isAdmin): ?>
+        <div class="stats" id="statsContainer">
+            <div class="stat-card">
+                <h3>📦 Total Materiais</h3>
+                <div class="number" id="stat-total">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>✅ Disponíveis</h3>
+                <div class="number" id="stat-disponiveis">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>📤 Emprestados</h3>
+                <div class="number" id="stat-emprestados">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>⏳ Pedidos Pendentes</h3>
+                <div class="number" id="stat-pendentes">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>👥 Utilizadores</h3>
+                <div class="number" id="stat-usuarios">-</div>
+            </div>
+        </div>
+        <?php endif; ?>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showSection('materiais')">📦 Materiais</button>
+            <?php if($isAdmin): ?>
+            <button class="tab" onclick="showSection('pedidos')">⏳ Pedidos Pendentes</button>
+            <?php endif; ?>
+            <button class="tab" onclick="showSection('emprestimos')">📋 <?php echo $isAdmin ? 'Todos os Empréstimos' : 'Meus Empréstimos'; ?></button>
+            <button class="tab" onclick="showSection('pedir')">➕ Pedir Empréstimo</button>
+            <?php if($isAdmin): ?>
+            <button class="tab" onclick="showSection('usuarios')">👥 Utilizadores</button>
+            <?php endif; ?>
+        </div>
+        
+        <div class="content">
+            <!-- Seção Materiais -->
+            <div id="materiais" class="section active">
+                <div class="section-header">
+                    <h2>📦 Materiais</h2>
+                    <?php if($isAdmin): ?>
+                    <button class="btn-primary" onclick="abrirModalNovoMaterial()">➕ Adicionar Material</button>
+                    <?php endif; ?>
+                </div>
+                <div class="loading">A carregar materiais...</div>
+                <div class="table-container">
+                    <table class="table" id="tabelaMateriais" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Tipo</th>
+                                <th>Número de Série</th>
+                                <th>Status</th>
+                                <?php if($isAdmin): ?>
+                                <th>Ações</th>
+                                <?php endif; ?>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <?php if($isAdmin): ?>
+            <!-- Seção Pedidos Pendentes -->
+            <div id="pedidos" class="section">
+                <h2>⏳ Pedidos Pendentes de Aprovação</h2>
+                <div class="loading">A carregar pedidos...</div>
+                <div class="table-container">
+                    <table class="table" id="tabelaPedidos" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>Utilizador</th>
+                                <th>Tipo</th>
+                                <th>Ano/Turma</th>
+                                <th>Material</th>
+                                <th>Data Pedido</th>
+                                <th>Prev. Devolução</th>
+                                <th>Observações</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div id="emptyPedidos" style="display:none;">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✅</div>
+                        <h3>Nenhum pedido pendente</h3>
+                        <p>Não há pedidos à espera de aprovação</p>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+            
+            <!-- Seção Empréstimos -->
+            <div id="emprestimos" class="section">
+                <h2>📋 <?php echo $isAdmin ? 'Histórico de Empréstimos' : 'Meus Empréstimos'; ?></h2>
+                <div class="loading">A carregar empréstimos...</div>
+                <div class="table-container">
+                    <table class="table" id="tabelaEmprestimos" style="display:none;">
+                        <thead>
+                            <tr>
+                                <?php if($isAdmin): ?>
+                                <th>Utilizador</th>
+                                <th>Tipo</th>
+                                <?php endif; ?>
+                                <th>Material</th>
+                                <th>Nº Série</th>
+                                <th>Data Pedido</th>
+                                <th>Prev. Devolução</th>
+                                <th>Status</th>
+                                <?php if($isAdmin): ?>
+                                <th>Ações</th>
+                                <?php endif; ?>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Seção Pedir Empréstimo -->
+            <div id="pedir" class="section">
+                <h2>➕ Pedir Empréstimo</h2>
+                <div id="mensagemPedido"></div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Material</label>
+                        <select id="materialPedido" required>
+                            <option value="">A carregar...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Data Prevista de Devolução</label>
+                        <input type="date" id="dataDevolucaoPedido" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Observações / Motivo do Pedido</label>
+                    <textarea id="observacoesPedido" rows="3" placeholder="Ex: Preciso para trabalho de grupo de matemática..."></textarea>
+                </div>
+                
+                <button class="btn-primary" onclick="fazerPedido()">Enviar Pedido</button>
+                
+                <div class="alert alert-info" style="margin-top: 20px;">
+                    <strong>ℹ️ Informação:</strong> O seu pedido será enviado para aprovação do administrador. Será notificado quando for aprovado ou recusado.
+                </div>
+            </div>
+            
+            <?php if($isAdmin): ?>
+            <!-- Seção Usuários -->
+            <div id="usuarios" class="section">
+                <div class="section-header">
+                    <h2>👥 Utilizadores do Sistema</h2>
+                    <button class="btn-primary" onclick="abrirModalNovoUsuario()">➕ Adicionar Utilizador</button>
+                </div>
+                <div class="loading">A carregar utilizadores...</div>
+                <div class="table-container">
+                    <table class="table" id="tabelaUsuarios" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Tipo</th>
+                                <th>Ano/Turma</th>
+                                <th>Nº Processo</th>
+                                <th>NIF</th>
+                                <th>Telefone</th>
+                                <th>Tel. Encarregado</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
