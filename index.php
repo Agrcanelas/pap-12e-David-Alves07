@@ -693,7 +693,7 @@ $userTipo = $_SESSION['user_tipo'];
                     <h2>👥 Utilizadores do Sistema</h2>
                     <button class="btn-primary" onclick="abrirModalNovoUsuario()">➕ Adicionar Utilizador</button>
                 </div>
-                </div>
+                
     
     <div class="search-box">
         <input type="text" class="search-input" id="searchUsuarios" placeholder="🔍 Pesquisar utilizadores..." onkeyup="filtrarUsuarios()">
