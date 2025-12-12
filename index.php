@@ -630,9 +630,11 @@ $userTipo = $_SESSION['user_tipo'];
             
             <!-- Seção Empréstimos -->
             <div id="emprestimos" class="section">
-                <h2><div class="search-box">
-                    <input type="text" class="search-input" id="searchEmprestimos" placeholder="🔍 Pesquisar empréstimos..." onkeyup="filtrarEmprestimos()">
+                <h2>
                 </div>📋 <?php echo $isAdmin ? 'Histórico de Empréstimos' : 'Meus Empréstimos'; ?></h2>
+                 <div class="search-box">
+        <input type="text" class="search-input" id="searchEmprestimos" placeholder="🔍 Pesquisar empréstimos..." onkeyup="filtrarEmprestimos()">
+    </div>
                 <div class="loading">A carregar empréstimos...</div>
                 <div class="table-container">
                     <table class="table" id="tabelaEmprestimos" style="display:none;">
