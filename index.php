@@ -539,6 +539,10 @@ $userTipo = $_SESSION['user_tipo'];
     <button class="tab active" onclick="showSection('materiais')">📦 Materiais</button>
     <?php if($isAdmin): ?>
     <button class="tab" onclick="showSection('pedidos')">⏳ Pedidos Pendentes</button>
+    <div class="tabs">
+    <button class="tab active" onclick="showSection('materiais')">📦 Materiais</button>
+    <?php if($isAdmin): ?>
+    <button class="tab" onclick="showSection('pedidos')">⏳ Pedidos Pendentes</button>
     <a href="relatorios.php" class="tab" style="text-decoration: none;">📊 Relatórios</a>
     <?php endif; ?>
     <button class="tab" onclick="showSection('emprestimos')">📋 <?php echo $isAdmin ? 'Todos os Empréstimos' : 'Meus Empréstimos'; ?></button>
@@ -1392,8 +1396,8 @@ $userTipo = $_SESSION['user_tipo'];
                 carregarUsuarios();
             }
         }
-
-// === FUNÇÕES DE PESQUISA ===
+        
+        // === FUNÇÕES DE PESQUISA ===
         
         function filtrarMateriais() {
             const input = document.getElementById('searchMateriais');
@@ -1472,7 +1476,7 @@ $userTipo = $_SESSION['user_tipo'];
                 row.style.display = found ? '' : 'none';
             }
         }
-
+       
     </script>
 </body>
 </html>
