@@ -1486,6 +1486,65 @@ $userTipo = $_SESSION['user_tipo'];
             }
         }
         
+        // === GESTÃO DE MANUTENÇÃO ===
+        
+        // Carregar materiais em manutenção (admin)
+        function carregarManutencao() {
+            if(!isAdmin) return;
+            
+            fetch('api.php?action=listar_materiais')
+                .then(r => r.json())
+                .then(data => {
+                    const manutencao = data.filter(m => m.status === 'manutencao');
+                    const tbody = document.querySelector('#tabelaManutencao tbody');
+                    
+                    if(manutencao.length === 0) {
+                        document.querySelector('#manutencao .loading').style.display = 'none';
+                        document.getElementById('emptyManutencao').style.display = 'block';
+                    } else {
+                        tbody.innerHTML = manutencao.map(m => `
+                            <tr>
+                                <td>${m.nome}</td>
+                                <td>${m.tipo}</td>
+                                <td>${m.numero_serie || '-'}</td>
+                                <td>${new Date(m.data_cadastro).toLocaleDateString('pt-PT')}</td>
+                                <td>
+                                    <button class="btn-success" onclick="marcarDisponivel(${m.id}, '${m.nome.replace(/'/g, "\\'")}')">✓ Marcar Disponível</button>
+                                </td>
+                            </tr>
+                        `).join('');
+                        
+                        document.querySelector('#manutencao .loading').style.display = 'none';
+                        document.getElementById('tabelaManutencao').style.display = 'table';
+                    }
+                });
+        }
+        
+        // Marcar material como disponível
+        function marcarDisponivel(id, nome) {
+            if(!confirm(`Marcar "${nome}" como disponível?`)) return;
+            
+            fetch('api.php?action=editar_material', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    id: id,
+                    status: 'disponivel'
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert('✅ Material marcado como disponível!');
+                    carregarManutencao();
+                    carregarMateriais();
+                    carregarEstatisticas();
+                } else {
+                    alert('❌ Erro ao atualizar material');
+                }
+            });
+        }
+        
         // === CARREGAR DADOS AO INICIAR ===
         window.onload = function() {
             carregarMateriais();
