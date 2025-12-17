@@ -1555,6 +1555,7 @@ $userTipo = $_SESSION['user_tipo'];
                 carregarEstatisticas();
                 carregarPedidos();
                 carregarUsuarios();
+                carregarManutencao();
             }
         }
     </script>
