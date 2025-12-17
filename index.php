@@ -546,6 +546,7 @@ $userTipo = $_SESSION['user_tipo'];
             <button class="tab active" onclick="showSection('materiais')">📦 Materiais</button>
             <?php if($isAdmin): ?>
             <button class="tab" onclick="showSection('pedidos')">⏳ Pedidos Pendentes</button>
+             <button class="tab" onclick="showSection('manutencao')">🔧 Manutenção</button>
             <a href="relatorios.php" class="tab" style="text-decoration: none;">📊 Relatórios</a>
             <?php endif; ?>
             <button class="tab" onclick="showSection('emprestimos')">📋 <?php echo $isAdmin ? 'Todos os Empréstimos' : 'Meus Empréstimos'; ?></button>
@@ -615,6 +616,39 @@ $userTipo = $_SESSION['user_tipo'];
                         <div class="empty-state-icon">✅</div>
                         <h3>Nenhum pedido pendente</h3>
                         <p>Não há pedidos à espera de aprovação</p>
+                    </div>
+                </div>
+            
+            </div>
+            <?php endif; ?>
+            
+            <?php if($isAdmin): ?>
+            <!-- Seção Manutenção -->
+            <div id="manutencao" class="section">
+                <h2>🔧 Materiais em Manutenção</h2>
+                <p style="color: #666; margin-bottom: 15px;">Materiais que estão temporariamente indisponíveis para empréstimo</p>
+                
+                <div class="loading">A carregar materiais em manutenção...</div>
+                <div class="table-container">
+                    <table class="table" id="tabelaManutencao" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Tipo</th>
+                                <th>Número de Série</th>
+                                <th>Data Registo</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                
+                <div id="emptyManutencao" style="display:none;">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✅</div>
+                        <h3>Nenhum material em manutenção</h3>
+                        <p>Todos os materiais estão disponíveis ou emprestados</p>
                     </div>
                 </div>
             </div>
