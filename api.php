@@ -241,8 +241,15 @@ $stmt = $db->query("SELECT * FROM materiais WHERE status = 'disponivel' ORDER BY
         if($method === 'POST') {
             $data = json_decode(file_get_contents("php://input"));
             
-            $stmt = $db->prepare("UPDATE materiais SET nome = ?, tipo = ?, numero_serie = ?, status = ? WHERE id = ?");
-            $stmt->execute([$data->nome, $data->tipo, $data->numero_serie, $data->status, $data->id]);
+            // Se apenas o status foi enviado (atualização rápida)
+            if(isset($data->status) && !isset($data->nome)) {
+                $stmt = $db->prepare("UPDATE materiais SET status = ? WHERE id = ?");
+                $stmt->execute([$data->status, $data->id]);
+            } else {
+                // Atualização completa
+                $stmt = $db->prepare("UPDATE materiais SET nome = ?, tipo = ?, numero_serie = ?, status = ? WHERE id = ?");
+                $stmt->execute([$data->nome, $data->tipo, $data->numero_serie, $data->status, $data->id]);
+            }
             
             echo json_encode(['success' => true]);
         }
