@@ -193,6 +193,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit">Entrar</button>
         </form>
         
+ <div class="link-login" style="text-align:center; margin-top:15px; font-size:13px;">
+            Não tens conta? <a href="registo.php" style="color:#667eea; text-decoration:none; font-weight:600;">Regista-te</a>
+        </div>
+
         <div class="info-box">
             <strong>👤 Contas de Teste:</strong>
             <div><strong>Admin:</strong> admin@canelas.pt / admin123</div>
