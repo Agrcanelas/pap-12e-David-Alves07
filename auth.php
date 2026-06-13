@@ -29,6 +29,18 @@ class Auth {
         return false;
     }
     
+public function register($nome, $email, $senha, $tipo = 'utilizador') {
+    // verificar se email já existe
+    $stmt = $this->db->prepare("SELECT id FROM usuarios WHERE email = ?");
+    $stmt->execute([$email]);
+    if($stmt->fetch()) {
+        return false; // email já existe
+    }
+
+    $stmt = $this->db->prepare("INSERT INTO usuarios (nome, email, senha, tipo, is_admin) VALUES (?, ?, MD5(?), ?, 0)");
+    return $stmt->execute([$nome, $email, $senha, $tipo]);
+}
+
     public function logout() {
         session_destroy();
         header('Location: login.php');
