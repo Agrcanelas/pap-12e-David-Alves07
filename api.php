@@ -241,6 +241,12 @@ $stmt = $db->query("SELECT * FROM materiais ORDER BY tipo, CAST(SUBSTRING(nome, 
         if($method === 'POST') {
             $data = json_decode(file_get_contents("php://input"));
             
+            // Se está a marcar disponível/manutenção, fechar empréstimos pendentes
+            if(isset($data->status) && ($data->status === 'disponivel' || $data->status === 'manutencao')) {
+                $stmt = $db->prepare("UPDATE emprestimos SET status = 'devolvido', data_devolucao = NOW() WHERE material_id = ? AND status IN ('ativo','atrasado')");
+                $stmt->execute([$data->id]);
+            }
+            
             // Se apenas o status foi enviado (atualização rápida)
             if(isset($data->status) && !isset($data->nome)) {
                 $stmt = $db->prepare("UPDATE materiais SET status = ? WHERE id = ?");
