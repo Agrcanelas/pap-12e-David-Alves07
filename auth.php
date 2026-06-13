@@ -29,7 +29,7 @@ class Auth {
         return false;
     }
     
-public function register($nome, $email, $senha, $tipo = 'utilizador') {
+public function register($nome, $email, $senha, $tipo = 'aluno') {
     // verificar se email já existe
     $stmt = $this->db->prepare("SELECT id FROM usuarios WHERE email = ?");
     $stmt->execute([$email]);
